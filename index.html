@@ -1,0 +1,1774 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KHARIX — Task Management System</title>
+  
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <style>
+    :root {
+      /* Default Theme: Dark Luxury Gold */
+      --bg-color: #050507;
+      --card-bg: rgba(18, 18, 22, 0.9);
+      --card-border: rgba(245, 197, 24, 0.25);
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --input-bg: rgba(28, 28, 35, 0.95);
+      --border-color: #2a2a35;
+      
+      --accent-solid: #f5c518;
+      --accent-hover: #ffd740;
+      --accent-secondary: #ffb300;
+      --accent-glow: rgba(245, 197, 24, 0.2);
+      
+      --danger-bg: rgba(239, 68, 68, 0.12);
+      --warning-bg: rgba(245, 158, 11, 0.12);
+      
+      --sidebar-width: 270px;
+      --shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.6);
+    }
+
+    [data-theme="light"] {
+      --bg-color: #f4f5f7;
+      --card-bg: #ffffff;
+      --card-border: rgba(0, 0, 0, 0.08);
+      --text-main: #0f172a;
+      --text-muted: #475569;
+      --input-bg: #f8fafc;
+      --border-color: #e2e8f0;
+      --shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.05);
+    }
+
+    [data-theme="midnight"] {
+      --bg-color: #090d16;
+      --card-bg: rgba(15, 23, 42, 0.9);
+      --card-border: rgba(56, 189, 248, 0.25);
+      --text-main: #f0f9ff;
+      --text-muted: #93c5fd;
+      --input-bg: rgba(30, 41, 59, 0.9);
+      --border-color: #1e3a8a;
+      --shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.8);
+    }
+
+    /* Accent Color Overrides */
+    [data-accent="emerald"] {
+      --accent-solid: #10b981;
+      --accent-hover: #34d399;
+      --accent-secondary: #059669;
+      --accent-glow: rgba(16, 185, 129, 0.25);
+    }
+    [data-accent="sapphire"] {
+      --accent-solid: #3b82f6;
+      --accent-hover: #60a5fa;
+      --accent-secondary: #2563eb;
+      --accent-glow: rgba(59, 130, 246, 0.25);
+    }
+    [data-accent="ruby"] {
+      --accent-solid: #ef4444;
+      --accent-hover: #f87171;
+      --accent-secondary: #dc2626;
+      --accent-glow: rgba(239, 68, 68, 0.25);
+    }
+    [data-accent="amethyst"] {
+      --accent-solid: #8b5cf6;
+      --accent-hover: #a78bfa;
+      --accent-secondary: #7c3aed;
+      --accent-glow: rgba(139, 92, 246, 0.25);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
+    
+    body {
+      background: var(--bg-color);
+      min-height: 100vh;
+      display: flex;
+      color: var(--text-main);
+      overflow-x: hidden;
+      transition: background 0.3s ease, color 0.3s ease;
+    }
+
+    /* --- SIDEBAR NAVIGATION --- */
+    aside {
+      width: var(--sidebar-width);
+      background: var(--card-bg);
+      border-right: 1px solid var(--border-color);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 30px 20px;
+      height: 100vh;
+      position: fixed;
+      left: 0; top: 0; z-index: 100;
+      backdrop-filter: blur(20px);
+    }
+
+    .brand {
+      font-size: 1.5rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, var(--text-main) 30%, var(--accent-solid) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 30px;
+      letter-spacing: 0.05em;
+    }
+    .brand i { color: var(--accent-solid); -webkit-text-fill-color: initial; }
+
+    .nav-links { list-style: none; display: flex; flex-direction: column; gap: 6px; flex: 1; overflow-y: auto; padding-right: 4px; }
+    
+    .nav-link {
+      display: flex; align-items: center; gap: 14px;
+      padding: 13px 16px; border-radius: 14px;
+      color: var(--text-muted); font-weight: 600; font-size: 0.92rem;
+      cursor: pointer; transition: all 0.25s ease; text-decoration: none;
+      border: 1px solid transparent;
+    }
+
+    .nav-link:hover { color: var(--text-main); background: var(--input-bg); transform: translateX(3px); border-color: var(--card-border); }
+    .nav-link.active {
+      background: linear-gradient(135deg, var(--accent-glow), rgba(255, 255, 255, 0.02));
+      color: var(--accent-solid);
+      border-color: var(--card-border);
+      box-shadow: 0 4px 20px var(--accent-glow);
+    }
+    .nav-link.active i { color: var(--accent-solid); }
+
+    .sidebar-footer {
+      border-top: 1px solid var(--border-color);
+      padding-top: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .connect-box {
+      background: var(--input-bg);
+      padding: 12px 14px;
+      border-radius: 16px;
+      border: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .connect-info { display: flex; align-items: center; gap: 10px; overflow: hidden; }
+    .connect-info img { width: 36px; height: 36px; border-radius: 50%; border: 1.5px solid var(--accent-solid); object-fit: cover; flex-shrink: 0; }
+    .connect-info div { overflow: hidden; }
+    .connect-info div h4 { font-size: 0.82rem; font-weight: 700; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .connect-info div p { font-size: 0.7rem; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+    /* --- MAIN CONTENT AREA --- */
+    main {
+      margin-left: var(--sidebar-width);
+      flex: 1;
+      padding: 40px 50px;
+      max-width: calc(100% - var(--sidebar-width));
+      min-height: 100vh;
+    }
+
+    .view-section { display: none; animation: fadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1); }
+    .view-section.active { display: block; }
+
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+    .top-header {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 30px;
+    }
+    .top-header h2 { font-size: 2rem; font-weight: 800; letter-spacing: -0.02em; color: var(--text-main); }
+    
+    .header-tools { display: flex; gap: 12px; align-items: center; }
+    
+    .icon-btn {
+      background: var(--card-bg); border: 1px solid var(--border-color);
+      width: 36px; height: 36px; border-radius: 50%; cursor: pointer;
+      color: var(--accent-solid); display: flex; align-items: center; justify-content: center;
+      transition: all 0.2s ease; box-shadow: var(--shadow);
+    }
+    .icon-btn:hover { border-color: var(--accent-solid); background: var(--input-bg); transform: scale(1.05); }
+
+    /* --- STATS GRID --- */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 18px;
+      margin-bottom: 30px;
+    }
+
+    .stat-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      padding: 24px;
+      border-radius: 24px;
+      box-shadow: var(--shadow);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      position: relative;
+      overflow: hidden;
+      backdrop-filter: blur(10px);
+    }
+    .stat-card::after {
+      content: ''; position: absolute; top: 0; right: 0; width: 90px; height: 90px;
+      background: radial-gradient(circle, var(--accent-glow) 0%, transparent 75%);
+      pointer-events: none;
+    }
+
+    .stat-card span { font-size: 0.78rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
+    .stat-card h3 { 
+      font-size: 2.2rem; font-weight: 800; 
+      background: linear-gradient(135deg, var(--accent-solid), var(--accent-secondary));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .panel-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 24px;
+      padding: 28px;
+      margin-bottom: 25px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+    }
+
+    .input-group { position: relative; margin-bottom: 14px; width: 100%; }
+    .input-group i { position: absolute; top: 50%; left: 16px; transform: translateY(-50%); color: var(--accent-solid); font-size: 0.95rem; }
+
+    input[type="text"], input[type="date"], input[type="number"], select, textarea {
+      width: 100%; padding: 13px 16px 13px 46px; border: 1px solid var(--border-color);
+      border-radius: 14px; font-size: 0.92rem; background: var(--input-bg);
+      color: var(--text-main); transition: all 0.2s ease; font-weight: 500;
+    }
+    input[type="date"], input[type="number"], select { padding-left: 16px; cursor: pointer; }
+    input:focus, select:focus, textarea:focus { outline: none; border-color: var(--accent-solid); box-shadow: 0 0 0 4px var(--accent-glow); }
+
+    .form-row { display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
+    .form-row > * { flex: 1; min-width: 160px; }
+
+    .primary-btn {
+      width: 100%; padding: 14px; background: linear-gradient(135deg, var(--accent-solid), var(--accent-secondary));
+      color: #080808; border: none; border-radius: 14px; cursor: pointer;
+      font-weight: 800; font-size: 0.98rem; transition: all 0.25s ease;
+      box-shadow: 0 6px 20px var(--accent-glow);
+    }
+    .primary-btn:hover { background: linear-gradient(135deg, var(--accent-hover), var(--accent-solid)); transform: translateY(-2px); box-shadow: 0 8px 25px var(--accent-glow); }
+
+    /* --- TOOLBAR & FILTERS --- */
+    .toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 22px; flex-wrap: wrap; gap: 12px; }
+    .filters { display: flex; gap: 6px; background: var(--input-bg); padding: 5px; border-radius: 14px; border: 1px solid var(--border-color); }
+    .filter-btn { padding: 9px 16px; border: none; background: transparent; color: var(--text-muted); cursor: pointer; border-radius: 10px; font-weight: 600; font-size: 0.85rem; transition: 0.2s; }
+    .filter-btn.active { background: linear-gradient(135deg, var(--accent-solid), var(--accent-secondary)); color: #080808; font-weight: 800; box-shadow: 0 2px 10px var(--accent-glow); }
+
+    /* --- TASK LIST ITEMS --- */
+    .task-list { list-style: none; display: flex; flex-direction: column; gap: 12px; }
+
+    .task-item {
+      display: flex; align-items: center; padding: 18px; background: var(--card-bg);
+      border: 1px solid var(--border-color); border-radius: 18px; gap: 16px;
+      transition: all 0.25s ease; box-shadow: var(--shadow);
+    }
+    .task-item:hover { border-color: var(--accent-solid); transform: translateY(-1px); background: var(--input-bg); }
+    .task-item.is-overdue { border-color: rgba(239, 68, 68, 0.5); background: var(--danger-bg); }
+    .task-item.is-due-today { border-color: rgba(245, 158, 11, 0.5); background: var(--warning-bg); }
+
+    .custom-checkbox {
+      appearance: none; width: 24px; height: 24px; border: 2px solid var(--accent-solid);
+      border-radius: 50%; cursor: pointer; position: relative; flex-shrink: 0; transition: 0.2s;
+    }
+    .custom-checkbox:checked { background: linear-gradient(135deg, var(--accent-solid), var(--accent-secondary)); border-color: var(--accent-solid); box-shadow: 0 0 12px var(--accent-glow); }
+    .custom-checkbox:checked::after {
+      content: '\f00c'; font-family: 'Font Awesome 6 Free'; font-weight: 900;
+      color: #080808; font-size: 11px; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    }
+
+    .task-content { flex: 1; display: flex; flex-direction: column; gap: 6px; cursor: pointer; }
+    .task-text { font-size: 1.02rem; font-weight: 700; color: var(--text-main); }
+    .task-meta { display: flex; flex-wrap: wrap; gap: 8px; font-size: 0.78rem; color: var(--text-muted); align-items: center; }
+
+    .badge { padding: 3px 10px; border-radius: 8px; font-weight: 700; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.03em; }
+    .badge-subject { background: var(--accent-glow); color: var(--accent-solid); border: 1px solid var(--card-border); }
+    .badge-priority-urgent { background: rgba(239, 68, 68, 0.2); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.4); }
+    .badge-priority-high { background: rgba(245, 158, 11, 0.2); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.4); }
+    .badge-priority-medium { background: var(--accent-glow); color: var(--accent-solid); border: 1px solid var(--card-border); }
+    .badge-priority-low { background: rgba(16, 185, 129, 0.2); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.4); }
+
+    .deadline-badge { display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px; border-radius: 8px; font-weight: 700; font-size: 0.72rem; }
+    .status-overdue { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
+    .status-today { background: rgba(245, 158, 11, 0.2); color: #f59e0b; }
+    .status-soon { background: var(--accent-glow); color: var(--accent-solid); }
+
+    .task-item.completed { opacity: 0.5; }
+    .task-item.completed .task-text { text-decoration: line-through; }
+
+    .btn-icon { width: 38px; height: 38px; border: none; border-radius: 12px; cursor: pointer; background: var(--input-bg); color: var(--text-muted); transition: 0.2s; border: 1px solid var(--border-color); display: flex; align-items: center; justify-content: center; }
+    .btn-icon:hover { background: var(--accent-glow); color: var(--accent-solid); border-color: var(--accent-solid); }
+
+    .grid-2col { display: grid; grid-template-columns: 2fr 1fr; gap: 24px; }
+    @media(max-width: 950px) { .grid-2col { grid-template-columns: 1fr; } }
+
+    .timer-display { 
+      font-size: 4rem; font-weight: 800; 
+      background: linear-gradient(135deg, var(--accent-solid), var(--accent-secondary));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent; 
+      text-align: center; margin: 15px 0; letter-spacing: -0.02em; 
+    }
+    .timer-controls { display: flex; justify-content: center; gap: 12px; }
+
+    /* --- COMPACT MINI CALENDAR STYLES --- */
+    .mini-calendar-container { margin-top: 25px; border-top: 1px solid var(--border-color); padding-top: 20px; }
+    .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+    .cal-day-name { text-align: center; font-weight: 700; font-size: 0.72rem; color: var(--text-muted); padding: 4px 0; }
+    .cal-cell {
+      background: var(--input-bg); border: 1px solid var(--border-color); border-radius: 8px;
+      min-height: 45px; padding: 4px; display: flex; flex-direction: column; gap: 2px; overflow: hidden;
+    }
+    .cal-cell.other-month { opacity: 0.35; }
+    .cal-cell.today { border-color: var(--accent-solid); background: var(--accent-glow); }
+    .cal-date-num { font-size: 0.75rem; font-weight: 700; color: var(--text-main); }
+    .cal-task-pill {
+      font-size: 0.55rem; background: var(--card-bg); border: 1px solid var(--card-border);
+      color: var(--text-main); padding: 1px 3px; border-radius: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+
+    /* --- SCRATCHPAD & NOTE FOLDERS STYLES --- */
+    .scratchpad-layout { display: grid; grid-template-columns: 260px 1fr; gap: 20px; align-items: start; }
+    @media(max-width: 768px) { .scratchpad-layout { grid-template-columns: 1fr; } }
+
+    .note-folders-sidebar {
+      background: var(--input-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 18px;
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .folder-item-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 14px;
+      border-radius: 12px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      border: 1px solid transparent;
+      transition: 0.2s;
+    }
+    .folder-item-row:hover { background: var(--card-bg); color: var(--text-main); border-color: var(--card-border); }
+    .folder-item-row.active {
+      background: linear-gradient(135deg, var(--accent-glow), rgba(255, 255, 255, 0.02));
+      color: var(--accent-solid);
+      border-color: var(--card-border);
+      box-shadow: 0 4px 15px var(--accent-glow);
+    }
+
+    .note-file-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 14px;
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      cursor: pointer;
+      transition: 0.2s;
+      margin-bottom: 8px;
+    }
+    .note-file-item:hover { border-color: var(--accent-solid); background: var(--input-bg); }
+    .note-file-item.active { border-color: var(--accent-solid); box-shadow: 0 0 10px var(--accent-glow); }
+
+    .scratchpad-toolbar {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+    }
+    .scratchpad-btn {
+      background: var(--input-bg);
+      border: 1px solid var(--border-color);
+      color: var(--text-muted);
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+    .scratchpad-btn:hover {
+      border-color: var(--accent-solid);
+      color: var(--accent-solid);
+      background: var(--accent-glow);
+    }
+    .scratchpad-view-mode {
+      display: none;
+      padding: 13px 16px;
+      border: 1px solid var(--border-color);
+      border-radius: 14px;
+      background: var(--input-bg);
+      color: var(--text-main);
+      min-height: 250px;
+      font-size: 0.92rem;
+      line-height: 1.5;
+      overflow-y: auto;
+    }
+    .scratchpad-view-mode h1, .scratchpad-view-mode h2, .scratchpad-view-mode h3 {
+      color: var(--accent-solid);
+      margin-top: 10px;
+      margin-bottom: 6px;
+    }
+    .scratchpad-view-mode ul {
+      padding-left: 20px;
+      margin-bottom: 10px;
+    }
+
+    /* --- MODALS --- */
+    .modal-overlay {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.8); display: none; justify-content: center;
+      align-items: center; z-index: 1000; backdrop-filter: blur(8px);
+    }
+    .modal-card {
+      background: var(--card-bg); width: 90%; max-width: 520px; padding: 32px;
+      border-radius: 28px; border: 1px solid var(--card-border); box-shadow: var(--shadow); color: var(--text-main);
+      max-height: 90vh; overflow-y: auto;
+    }
+    .modal-card h3 { font-size: 1.4rem; margin-bottom: 18px; color: var(--accent-solid); }
+
+    .empty-state { text-align: center; padding: 45px; color: var(--text-muted); }
+    .empty-state i { font-size: 2.8rem; margin-bottom: 12px; color: var(--accent-solid); opacity: 0.6; }
+
+    /* Progress bar */
+    .progress-track { width: 100%; height: 10px; background: var(--input-bg); border-radius: 5px; overflow: hidden; margin-top: 10px; border: 1px solid var(--border-color); }
+    .progress-fill { height: 100%; background: linear-gradient(135deg, var(--accent-solid), var(--accent-secondary)); width: 0%; transition: width 0.4s ease; }
+  </style>
+</head>
+<body>
+
+  <!-- SIDEBAR -->
+  <aside>
+    <div>
+      <div class="brand">
+        <i class="fas fa-layer-group"></i> KHARIX
+      </div>
+      <ul class="nav-links">
+        <li><a class="nav-link active" onclick="switchView('dashboard', this)"><i class="fas fa-home"></i> Dashboard</a></li>
+        <li><a class="nav-link" onclick="switchView('tasks', this)"><i class="fas fa-check-circle"></i> Tasks & Due</a></li>
+        <li><a class="nav-link" onclick="switchView('scratchpad', this)"><i class="fas fa-pen-to-square"></i> Quick Notes</a></li>
+        <li><a class="nav-link" onclick="switchView('subjects', this)"><i class="fas fa-folder"></i> Categories</a></li>
+        <li><a class="nav-link" onclick="switchView('stats', this)"><i class="fas fa-chart-pie"></i> Analytics & Focus</a></li>
+        <li><a class="nav-link" onclick="switchView('trash', this)"><i class="fas fa-trash"></i> Trash</a></li>
+        <li><a class="nav-link" onclick="switchView('settings', this)"><i class="fas fa-cog"></i> Settings</a></li>
+      </ul>
+    </div>
+    <div class="sidebar-footer">
+      <div class="connect-box">
+        <div class="connect-info">
+          <img src="https://api.dicebear.com/7.x/identicon/svg?seed=KharixUser" id="sidebar-avatar" alt="Avatar">
+          <div>
+            <h4 id="sidebar-username">Workspace User</h4>
+            <p id="sidebar-school">No School Set</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN CONTENT CONTAINER -->
+  <main>
+
+    <!-- 1. DASHBOARD VIEW -->
+    <div id="view-dashboard" class="view-section active">
+      <div class="top-header">
+        <div>
+          <h2 id="dash-greeting">Good Day, Workspace User 👋</h2>
+          <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 4px;" id="dash-subtitle">Here is your daily task summary and progress report.</p>
+        </div>
+        <div class="header-tools">
+          <button class="primary-btn" style="width: auto; padding: 11px 20px;" onclick="openTaskModal()"><i class="fas fa-plus"></i> Add Task</button>
+        </div>
+      </div>
+
+      <div class="panel-card" style="margin-bottom: 25px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+          <span style="font-weight: 700; color: var(--text-main); font-size: 0.95rem;">Today's Goal: <span id="goal-count">0 / 0 tasks completed</span></span>
+          <span style="font-weight: 800; color: var(--accent-solid); font-size: 0.95rem;" id="goal-percent">0%</span>
+        </div>
+        <div class="progress-track">
+          <div class="progress-fill" id="goal-progress-bar"></div>
+        </div>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-card">
+          <span>Total Tasks</span>
+          <h3 id="stat-total">0</h3>
+        </div>
+        <div class="stat-card">
+          <span>Active Tasks</span>
+          <h3 id="stat-active">0</h3>
+        </div>
+        <div class="stat-card">
+          <span>Completed</span>
+          <h3 id="stat-completed">0</h3>
+        </div>
+        <div class="stat-card" style="border-color: rgba(239, 68, 68, 0.4);">
+          <span>Overdue</span>
+          <h3 id="stat-overdue" style="color: #ef4444; -webkit-text-fill-color: #ef4444;">0</h3>
+        </div>
+      </div>
+
+      <div class="grid-2col">
+        <div class="panel-card">
+          <h3 style="margin-bottom: 18px; color: var(--accent-solid);"><i class="fas fa-clipboard-list"></i> Today's Tasks</h3>
+          <ul id="dashboard-task-list" class="task-list"></ul>
+        </div>
+
+        <div class="panel-card">
+          <h3 style="margin-bottom: 18px; color: var(--accent-solid);"><i class="fas fa-lightbulb"></i> Workspace Notes</h3>
+          <textarea id="quick-notes" rows="6" placeholder="Jot down quick thoughts..." oninput="saveNotes()"></textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. TASKS & DUE VIEW -->
+    <div id="view-tasks" class="view-section">
+      <div class="top-header">
+        <h2>Manage Tasks</h2>
+        <div class="header-tools">
+          <button class="primary-btn" style="width: auto; padding: 11px 20px;" onclick="openTaskModal()"><i class="fas fa-plus"></i> Add Task</button>
+        </div>
+      </div>
+
+      <div class="toolbar">
+        <div class="filters">
+          <button class="filter-btn active" data-filter="all">All</button>
+          <button class="filter-btn" data-filter="active">Active</button>
+          <button class="filter-btn" data-filter="overdue">Overdue</button>
+          <button class="filter-btn" data-filter="completed">Completed</button>
+        </div>
+        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+          <select id="sort-select" onchange="renderTasks()" style="width: 160px; padding: 10px; cursor: pointer;">
+            <option value="date-desc">Newest First</option>
+            <option value="date-asc">Oldest First</option>
+            <option value="due-date">Due Date</option>
+            <option value="priority">Priority</option>
+            <option value="alpha">Alphabetical</option>
+          </select>
+          <div class="input-group" style="width: 220px; margin-bottom: 0;">
+            <i class="fas fa-search" style="left: 14px;"></i>
+            <input type="text" id="search-input" placeholder="Search tasks..." style="padding-left: 38px; padding-top: 10px; padding-bottom: 10px;" oninput="renderTasks()">
+          </div>
+        </div>
+      </div>
+
+      <ul id="task-list" class="task-list"></ul>
+
+      <!-- Compact Mini Calendar placed right below the Tasks list -->
+      <div class="panel-card mini-calendar-container">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+          <span style="font-weight: 700; font-size: 0.95rem; color: var(--accent-solid);" id="cal-month-year">Month Year</span>
+          <div style="display: flex; gap: 6px;">
+            <button class="icon-btn" onclick="changeMonth(-1)"><i class="fas fa-chevron-left" style="font-size: 0.8rem;"></i></button>
+            <button class="icon-btn" onclick="changeMonth(1)"><i class="fas fa-chevron-right" style="font-size: 0.8rem;"></i></button>
+          </div>
+        </div>
+        <div class="calendar-grid" style="margin-bottom: 6px;">
+          <div class="cal-day-name">Su</div>
+          <div class="cal-day-name">Mo</div>
+          <div class="cal-day-name">Tu</div>
+          <div class="cal-day-name">We</div>
+          <div class="cal-day-name">Th</div>
+          <div class="cal-day-name">Fr</div>
+          <div class="cal-day-name">Sa</div>
+        </div>
+        <div class="calendar-grid" id="calendar-days-container"></div>
+      </div>
+    </div>
+
+    <!-- 2.5 QUICK NOTES & FOLDER FILES VIEW -->
+    <div id="view-scratchpad" class="view-section">
+      <div class="top-header">
+        <h2>Quick Notes & Folders</h2>
+        <div class="header-tools">
+          <button class="primary-btn" style="width: auto; padding: 11px 18px;" onclick="openFolderModal()"><i class="fas fa-folder-plus"></i> New Folder</button>
+          <button class="primary-btn" style="width: auto; padding: 11px 18px;" onclick="openNoteModal()"><i class="fas fa-file-circle-plus"></i> New Note File</button>
+        </div>
+      </div>
+
+      <div class="scratchpad-layout">
+        <!-- Folders Sidebar -->
+        <div class="note-folders-sidebar">
+          <span style="font-weight: 700; font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;">Note Folders</span>
+          <div id="note-folders-list" style="display: flex; flex-direction: column; gap: 6px;">
+            <!-- Rendered dynamically -->
+          </div>
+        </div>
+
+        <!-- Notes Editor Area -->
+        <div class="panel-card" style="margin-bottom: 0;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; flex-wrap: wrap; gap: 10px;">
+            <h3 id="current-active-note-title" style="color: var(--accent-solid); margin-bottom: 0; font-size: 1.2rem;">Select a note file</h3>
+            <div style="display: flex; gap: 8px;" id="note-action-buttons">
+              <button class="btn-icon" onclick="renameCurrentNote()" title="Rename File"><i class="fas fa-pen"></i></button>
+              <button class="btn-icon" onclick="deleteCurrentNote()" title="Delete File"><i class="fas fa-trash"></i></button>
+            </div>
+          </div>
+
+          <div class="scratchpad-toolbar">
+            <button class="scratchpad-btn" onclick="insertMarkdown('# ')"><i class="fas fa-heading"></i> H1</button>
+            <button class="scratchpad-btn" onclick="insertMarkdown('## ')"><i class="fas fa-heading"></i> H2</button>
+            <button class="scratchpad-btn" onclick="insertMarkdown('**', '**')"><i class="fas fa-bold"></i> Bold</button>
+            <button class="scratchpad-btn" onclick="insertMarkdown('*', '*')"><i class="fas fa-italic"></i> Italic</button>
+            <button class="scratchpad-btn" onclick="insertMarkdown('- ')"><i class="fas fa-list-ul"></i> List</button>
+            <button class="scratchpad-btn" onclick="toggleScratchpadPreview()" id="scratchpad-preview-toggle" style="margin-left: auto;"><i class="fas fa-eye"></i> Preview Markdown</button>
+          </div>
+          
+          <div class="input-group" style="margin-bottom: 0;">
+            <textarea id="scratchpad-textarea" rows="13" placeholder="Select or create a note file to start writing..." oninput="saveCurrentNoteContent()" style="padding: 16px;"></textarea>
+            <div id="scratchpad-preview" class="scratchpad-view-mode"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3. CATEGORIES MANAGEMENT VIEW -->
+    <div id="view-subjects" class="view-section">
+      <div class="top-header">
+        <h2>Project Categories</h2>
+      </div>
+
+      <div class="panel-card">
+        <form id="subject-form" onsubmit="addSubject(event)">
+          <div class="input-group" style="margin-bottom: 12px;">
+            <i class="fas fa-folder-open"></i>
+            <input type="text" id="subject-input" placeholder="Category Name (e.g., Development, Marketing)" required>
+          </div>
+          <button type="submit" class="primary-btn"><i class="fas fa-plus"></i> Add Category</button>
+        </form>
+      </div>
+
+      <div class="panel-card">
+        <h3 style="margin-bottom: 18px; color: var(--accent-solid);">Active Categories</h3>
+        <ul id="subjects-list" class="task-list"></ul>
+      </div>
+    </div>
+
+    <!-- 4. ANALYTICS & FOCUS TIMER COMBINED VIEW -->
+    <div id="view-stats" class="view-section">
+      <div class="top-header">
+        <h2>Analytics & Focus Timer</h2>
+      </div>
+      
+      <div class="stats-grid">
+        <div class="stat-card">
+          <span>Completion Rate</span>
+          <h3 id="stat-completion-rate">0%</h3>
+        </div>
+        <div class="stat-card">
+          <span>Completed Tasks</span>
+          <h3 id="stat-completed-count">0</h3>
+        </div>
+      </div>
+
+      <div class="grid-2col">
+        <!-- Focus Timer Panel -->
+        <div class="panel-card" style="text-align: center; display: flex; flex-direction: column; justify-content: center;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+            <h3 style="color: var(--accent-solid); margin-bottom: 0; text-align: left;"><i class="fas fa-stopwatch"></i> Focus Session</h3>
+            <select id="timer-technique-select" onchange="changeTimerTechnique(this.value)" style="width: 170px; padding: 6px 10px; font-size: 0.8rem;">
+              <option value="pomodoro"> Pomodoro (25m)</option>
+              <option value="deepwork"> Deep Work (50m)</option>
+              <option value="rule52"> 52/17 Rule (52m)</option>
+              <option value="ultradian"> Ultradian (90m)</option>
+              <option value="burst"> Quick Burst (15m)</option>
+              <option value="custom" selected> Custom Minutes</option>
+            </select>
+          </div>
+
+          <div style="display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 4px;">
+            <span style="font-weight: 700; color: var(--text-muted); font-size: 0.85rem;">Work Duration (mins):</span>
+            <input type="number" id="timer-custom-minutes" value="25" min="1" max="180" style="width: 80px; padding: 6px 10px; text-align: center;" onchange="updateCustomTimerMinutes(this.value)">
+          </div>
+
+          <div class="timer-display" id="timer-clock">25:00</div>
+          <div class="timer-controls">
+            <button class="primary-btn" style="width: 130px; padding: 12px;" onclick="startTimer()"><i class="fas fa-play"></i> Start</button>
+            <button class="icon-btn" style="width: 44px; height: 44px; border-radius: 14px;" onclick="pauseTimer()" title="Pause"><i class="fas fa-pause"></i></button>
+            <button class="icon-btn" style="width: 44px; height: 44px; border-radius: 14px;" onclick="resetTimer()" title="Reset"><i class="fas fa-redo"></i></button>
+          </div>
+        </div>
+
+        <!-- Productivity Breakdowns -->
+        <div style="display: flex; flex-direction: column; gap: 25px;">
+          <div class="panel-card" style="margin-bottom: 0; flex: 1;">
+            <h3 style="margin-bottom: 14px; color: var(--accent-solid); font-size: 1.1rem;">Priority Breakdown</h3>
+            <div id="priority-analytics-container" style="display: flex; flex-direction: column; gap: 8px;"></div>
+          </div>
+          <div class="panel-card" style="margin-bottom: 0; flex: 1;">
+            <h3 style="margin-bottom: 14px; color: var(--accent-solid); font-size: 1.1rem;">Category Breakdown</h3>
+            <div id="category-analytics-container" style="display: flex; flex-direction: column; gap: 8px;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 5. TRASH VIEW -->
+    <div id="view-trash" class="view-section">
+      <div class="top-header">
+        <h2>Trash Bin</h2>
+        <button class="primary-btn" style="width: auto; background: #ef4444; color: white;" onclick="emptyTrash()"><i class="fas fa-trash-alt"></i> Empty Trash</button>
+      </div>
+      <div class="panel-card">
+        <ul id="trash-list" class="task-list"></ul>
+      </div>
+    </div>
+
+    <!-- 6. SETTINGS & CUSTOMIZATION VIEW -->
+    <div id="view-settings" class="view-section">
+      <div class="top-header">
+        <h2>Settings & Customization</h2>
+      </div>
+
+      <div class="panel-card">
+        <h3 style="margin-bottom: 18px; color: var(--accent-solid);"><i class="fas fa-user-graduate"></i> User Profile & Academic Info</h3>
+        <form id="profile-form" onsubmit="saveProfile(event)">
+          <div class="form-row">
+            <div class="input-group">
+              <i class="fas fa-user"></i>
+              <input type="text" id="profile-name" placeholder="Your Full Name" required>
+            </div>
+            <div class="input-group">
+              <i class="fas fa-school"></i>
+              <input type="text" id="profile-school" placeholder="School / Institution" required>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="input-group">
+              <i class="fas fa-graduation-cap"></i>
+              <input type="text" id="profile-grade" placeholder="Grade / Year / Level (e.g., Grade 12 / College Junior)" required>
+            </div>
+          </div>
+          <button type="submit" class="primary-btn"><i class="fas fa-save"></i> Save Profile Details</button>
+        </form>
+      </div>
+
+      <div class="panel-card">
+        <h3 style="margin-bottom: 18px; color: var(--accent-solid);"><i class="fas fa-palette"></i> Appearance & Theme</h3>
+        <div class="form-row">
+          <div class="input-group">
+            <label style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted); display: block; margin-bottom: 6px;">Interface Theme Mode</label>
+            <select id="settings-theme-mode" onchange="changeThemeMode(this.value)">
+              <option value="dark">Dark Luxury</option>
+              <option value="light">Clean Light Mode</option>
+              <option value="midnight">Midnight Blue</option>
+            </select>
+          </div>
+          <div class="input-group">
+            <label style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted); display: block; margin-bottom: 6px;">Accent Color Scheme</label>
+            <select id="settings-accent" onchange="changeAccentColor(this.value)">
+              <option value="gold">Luxury Gold</option>
+              <option value="emerald">Emerald Green</option>
+              <option value="sapphire">Sapphire Blue</option>
+              <option value="ruby">Ruby Red</option>
+              <option value="amethyst">Amethyst Purple</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel-card">
+        <h3 style="margin-bottom: 18px; color: var(--accent-solid);"><i class="fas fa-database"></i> Data Backup & Export</h3>
+        <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+          <button class="primary-btn" style="flex: 1;" onclick="exportData()"><i class="fas fa-download"></i> Export JSON Backup</button>
+          <button class="primary-btn" style="flex: 1; background: transparent; border: 1px solid var(--border-color); color: var(--text-main);" onclick="document.getElementById('import-file').click()"><i class="fas fa-upload"></i> Restore JSON Backup</button>
+          <input type="file" id="import-file" style="display: none;" accept=".json" onchange="importData(event)">
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- ADD / EDIT TASK MODAL -->
+  <div class="modal-overlay" id="task-modal">
+    <div class="modal-card">
+      <h3 id="modal-task-form-title">Create New Task</h3>
+      <form id="task-form" onsubmit="handleTaskFormSubmit(event)">
+        <input type="hidden" id="edit-task-id">
+        <div class="input-group" style="margin-bottom: 14px;">
+          <i class="fas fa-pen-nib"></i>
+          <input type="text" id="task-input" placeholder="Task title (e.g., Final Physics Lab Report)" required>
+        </div>
+        <div class="form-row">
+          <div class="input-group">
+            <label style="font-size: 0.75rem; color: var(--text-muted); font-weight: 700; display: block; margin-bottom: 4px;">Category</label>
+            <select id="task-subject" onchange="handleSubjectDropdownChange(this)">
+              <!-- Dynamic Categories -->
+            </select>
+          </div>
+          <div class="input-group">
+            <label style="font-size: 0.75rem; color: var(--text-muted); font-weight: 700; display: block; margin-bottom: 4px;">Priority Level</label>
+            <select id="task-priority">
+              <option value="Urgent">🔴 Urgent</option>
+              <option value="High">🟠 High</option>
+              <option value="Medium" selected>🟡 Medium</option>
+              <option value="Low">🟢 Low</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="input-group">
+            <label style="font-size: 0.75rem; color: var(--text-muted); font-weight: 700; display: block; margin-bottom: 4px;">Due Date</label>
+            <input type="date" id="task-date">
+          </div>
+          <div class="input-group">
+            <label style="font-size: 0.75rem; color: var(--text-muted); font-weight: 700; display: block; margin-bottom: 4px;">Recurring Cycle</label>
+            <select id="task-recurring">
+              <option value="none">One-time Task</option>
+              <option value="daily">Daily</option>
+              <option value="weekly">Weekly</option>
+              <option value="monthly">Monthly</option>
+            </select>
+          </div>
+        </div>
+        <div class="input-group" style="margin-bottom: 18px;">
+          <textarea id="task-notes" rows="4" placeholder="Add extra notes or checklist details..."></textarea>
+        </div>
+        <button type="submit" class="primary-btn"><i class="fas fa-check"></i> Save Task</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- CREATE NEW FOLDER MODAL -->
+  <div class="modal-overlay" id="folder-modal">
+    <div class="modal-card">
+      <h3>Create New Note Folder</h3>
+      <form onsubmit="handleFolderFormSubmit(event)">
+        <div class="input-group" style="margin-bottom: 18px;">
+          <i class="fas fa-folder"></i>
+          <input type="text" id="new-folder-name" placeholder="Folder Name (e.g., Lectures, Meeting Minutes)" required>
+        </div>
+        <button type="submit" class="primary-btn"><i class="fas fa-folder-plus"></i> Create Folder</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- CREATE NEW NOTE FILE MODAL -->
+  <div class="modal-overlay" id="note-modal">
+    <div class="modal-card">
+      <h3>Create New Note File</h3>
+      <form onsubmit="handleNoteFileFormSubmit(event)">
+        <div class="input-group" style="margin-bottom: 14px;">
+          <i class="fas fa-file-alt"></i>
+          <input type="text" id="new-note-title" placeholder="Note File Title (e.g., Chapter 1 Summary)" required>
+        </div>
+        <div class="input-group" style="margin-bottom: 18px;">
+          <label style="font-size: 0.75rem; color: var(--text-muted); font-weight: 700; display: block; margin-bottom: 4px;">Save in Folder</label>
+          <select id="new-note-folder-select">
+            <!-- Dynamic Folders -->
+          </select>
+        </div>
+        <button type="submit" class="primary-btn"><i class="fas fa-file-circle-plus"></i> Create Note File</button>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    let tasks = JSON.parse(localStorage.getItem('kharix_tasks')) || [];
+    let trash = JSON.parse(localStorage.getItem('kharix_trash')) || [];
+    let subjects = JSON.parse(localStorage.getItem('kharix_subjects')) || ['Academics', 'Projects', 'Personal'];
+    let quickNotesText = localStorage.getItem('kharix_notes') || '';
+    
+    // Note Folders & Files system data model
+    let noteFolders = JSON.parse(localStorage.getItem('kharix_note_folders')) || ['General', 'Projects'];
+    let noteFiles = JSON.parse(localStorage.getItem('kharix_note_files')) || [
+      { id: 1, title: 'Welcome Note', folder: 'General', content: '# Welcome to your Note Files!\n- Create folders to organize notes.\n- Write ideas using markdown syntax.' }
+    ];
+    let activeNoteId = noteFiles.length > 0 ? noteFiles[0].id : null;
+    let activeFolderFilter = 'All';
+
+    let isScratchpadPreviewActive = false;
+    
+    let userProfile = JSON.parse(localStorage.getItem('kharix_profile')) || {
+      name: 'Workspace User',
+      school: 'My University / School',
+      grade: 'Grade 12'
+    };
+
+    let currentThemeMode = localStorage.getItem('kharix_theme_mode') || 'dark';
+    let currentAccent = localStorage.getItem('kharix_accent') || 'gold';
+
+    applyThemeSettings();
+
+    document.getElementById('quick-notes').value = quickNotesText;
+    document.getElementById('profile-name').value = userProfile.name;
+    document.getElementById('profile-school').value = userProfile.school;
+    document.getElementById('profile-grade').value = userProfile.grade;
+    document.getElementById('settings-theme-mode').value = currentThemeMode;
+    document.getElementById('settings-accent').value = currentAccent;
+
+    let calYear = new Date().getFullYear();
+    let calMonth = new Date().getMonth();
+
+    function applyThemeSettings() {
+      if (currentThemeMode === 'light') {
+        document.body.setAttribute('data-theme', 'light');
+      } else if (currentThemeMode === 'midnight') {
+        document.body.setAttribute('data-theme', 'midnight');
+      } else {
+        document.body.removeAttribute('data-theme');
+      }
+      document.body.setAttribute('data-accent', currentAccent);
+    }
+
+    function changeThemeMode(mode) {
+      currentThemeMode = mode;
+      localStorage.setItem('kharix_theme_mode', mode);
+      applyThemeSettings();
+    }
+
+    function changeAccentColor(accent) {
+      currentAccent = accent;
+      localStorage.setItem('kharix_accent', accent);
+      applyThemeSettings();
+    }
+
+    function saveProfile(e) {
+      e.preventDefault();
+      userProfile.name = document.getElementById('profile-name').value.trim();
+      userProfile.school = document.getElementById('profile-school').value.trim();
+      userProfile.grade = document.getElementById('profile-grade').value.trim();
+      localStorage.setItem('kharix_profile', JSON.stringify(userProfile));
+      updateProfileUI();
+      alert('Profile updated successfully!');
+    }
+
+    function updateProfileUI() {
+      document.getElementById('sidebar-username').innerText = userProfile.name;
+      document.getElementById('sidebar-school').innerText = `${userProfile.school} • ${userProfile.grade}`;
+      
+      const hour = new Date().getHours();
+      let greeting = 'Good Morning';
+      if (hour >= 12 && hour < 18) greeting = 'Good Afternoon';
+      else if (hour >= 18) greeting = 'Good Evening';
+
+      document.getElementById('dash-greeting').innerText = `${greeting}, ${userProfile.name} 👋`;
+      document.getElementById('dash-subtitle').innerText = `${userProfile.school} (${userProfile.grade}) • Daily task summary`;
+      document.getElementById('sidebar-avatar').src = `https://api.dicebear.com/7.x/identicon/svg?seed=${encodeURIComponent(userProfile.name)}`;
+    }
+
+    function switchView(viewId, element) {
+      document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.nav-link').forEach(el => el.classList.remove('active'));
+      document.getElementById(`view-${viewId}`).classList.add('active');
+      if(element) element.classList.add('active');
+      renderAll();
+    }
+
+    function openTaskModal(taskId = null) {
+      const modal = document.getElementById('task-modal');
+      const formTitle = document.getElementById('modal-task-form-title');
+      document.getElementById('edit-task-id').value = '';
+      document.getElementById('task-input').value = '';
+      document.getElementById('task-date').valueAsDate = new Date();
+      document.getElementById('task-notes').value = '';
+      document.getElementById('task-priority').value = 'Medium';
+      document.getElementById('task-recurring').value = 'none';
+
+      if (taskId) {
+        formTitle.innerText = 'Edit Task';
+        const t = tasks.find(x => x.id === taskId);
+        if (t) {
+          document.getElementById('edit-task-id').value = t.id;
+          document.getElementById('task-input').value = t.text;
+          document.getElementById('task-subject').value = t.subject;
+          document.getElementById('task-priority').value = t.priority || 'Medium';
+          document.getElementById('task-date').value = t.dueDate || '';
+          document.getElementById('task-recurring').value = t.recurring || 'none';
+          document.getElementById('task-notes').value = t.notes || '';
+        }
+      } else {
+        formTitle.innerText = 'Create New Task';
+      }
+      modal.style.display = 'flex';
+    }
+
+    function closeTaskModal() {
+      document.getElementById('task-modal').style.display = 'none';
+    }
+
+    function handleTaskFormSubmit(e) {
+      e.preventDefault();
+      const editId = document.getElementById('edit-task-id').value;
+      const text = document.getElementById('task-input').value.trim();
+      const subject = document.getElementById('task-subject').value;
+      const priority = document.getElementById('task-priority').value;
+      const dueDate = document.getElementById('task-date').value;
+      const recurring = document.getElementById('task-recurring').value;
+      const notes = document.getElementById('task-notes').value;
+
+      if (!text || subject === 'add-new-custom') return;
+
+      if (editId) {
+        tasks = tasks.map(t => t.id == editId ? { ...t, text, subject, priority, dueDate, recurring, notes } : t);
+      } else {
+        tasks.unshift({ id: Date.now(), text, subject, priority, dueDate, recurring, notes, completed: false });
+      }
+      closeTaskModal();
+      saveAndRenderTasks();
+    }
+
+    function addSubject(e) {
+      if (e) e.preventDefault();
+      const val = document.getElementById('subject-input').value.trim();
+      if (val && !subjects.includes(val)) {
+        subjects.push(val);
+        document.getElementById('subject-input').value = '';
+        saveAndRenderSubjects();
+        return val;
+      }
+      return null;
+    }
+
+    window.deleteSubject = function(sub) {
+      subjects = subjects.filter(s => s !== sub);
+      saveAndRenderSubjects();
+    };
+
+    function saveAndRenderSubjects() {
+      localStorage.setItem('kharix_subjects', JSON.stringify(subjects));
+      renderSubjects();
+      updateSubjectDropdowns();
+    }
+
+    function handleSubjectDropdownChange(selectElement) {
+      if (selectElement.value === 'add-new-custom') {
+        const newSubName = prompt("Enter the name of the new category:");
+        if (newSubName && newSubName.trim() !== '') {
+          const cleanName = newSubName.trim();
+          if (!subjects.includes(cleanName)) {
+            subjects.push(cleanName);
+            saveAndRenderSubjects();
+          }
+          selectElement.value = cleanName;
+        } else {
+          selectElement.value = subjects[0] || '';
+        }
+      }
+    }
+
+    function updateSubjectDropdowns() {
+      const select = document.getElementById('task-subject');
+      if(!select) return;
+      const currentSelected = select.value;
+      select.innerHTML = '';
+      
+      subjects.forEach(sub => {
+        const opt = document.createElement('option');
+        opt.value = sub;
+        opt.innerText = sub;
+        select.appendChild(opt);
+      });
+
+      const addOpt = document.createElement('option');
+      addOpt.value = 'add-new-custom';
+      addOpt.innerText = '+ Add New Category...';
+      select.appendChild(addOpt);
+
+      if (subjects.includes(currentSelected)) {
+        select.value = currentSelected;
+      }
+    }
+
+    function renderSubjects() {
+      const list = document.getElementById('subjects-list');
+      if (!list) return;
+      list.innerHTML = '';
+      if (subjects.length === 0) {
+        list.innerHTML = `<div class="empty-state"><p>No categories added yet.</p></div>`;
+        return;
+      }
+      subjects.forEach(sub => {
+        const li = document.createElement('li');
+        li.className = 'task-item';
+        li.innerHTML = `
+          <div class="task-content"><span class="task-text"><i class="fas fa-folder"></i> ${sub}</span></div>
+          <button class="btn-icon" onclick="deleteSubject('${sub}')"><i class="fas fa-trash"></i></button>
+        `;
+        list.appendChild(li);
+      });
+    }
+
+    window.toggleTask = function(id) {
+      tasks = tasks.map(t => {
+        if (t.id === id) {
+          const nextCompleted = !t.completed;
+          if (nextCompleted && t.recurring && t.recurring !== 'none') {
+            let nextDate = new Date(t.dueDate || new Date());
+            if (t.recurring === 'daily') nextDate.setDate(nextDate.getDate() + 1);
+            else if (t.recurring === 'weekly') nextDate.setDate(nextDate.getDate() + 7);
+            else if (t.recurring === 'monthly') nextDate.setMonth(nextDate.getMonth() + 1);
+            
+            tasks.push({
+              ...t,
+              id: Date.now() + 1,
+              completed: false,
+              dueDate: nextDate.toISOString().split('T')[0]
+            });
+          }
+          return { ...t, completed: nextCompleted };
+        }
+        return t;
+      });
+      saveAndRenderTasks();
+    };
+
+    window.moveToTrash = function(id) {
+      const task = tasks.find(t => t.id === id);
+      if (task) {
+        tasks = tasks.filter(t => t.id !== id);
+        trash.push(task);
+        localStorage.setItem('kharix_trash', JSON.stringify(trash));
+        saveAndRenderTasks();
+      }
+    };
+
+    window.restoreFromTrash = function(id) {
+      const task = trash.find(t => t.id === id);
+      if (task) {
+        trash = trash.filter(t => t.id !== id);
+        tasks.push(task);
+        localStorage.setItem('kharix_trash', JSON.stringify(trash));
+        renderTrash();
+        renderAll();
+      }
+    };
+
+    window.deletePermanently = function(id) {
+      trash = trash.filter(t => t.id !== id);
+      localStorage.setItem('kharix_trash', JSON.stringify(trash));
+      renderTrash();
+    };
+
+    function emptyTrash() {
+      if (confirm('Permanently delete all items in trash?')) {
+        trash = [];
+        localStorage.setItem('kharix_trash', JSON.stringify(trash));
+        renderTrash();
+      }
+    }
+
+    function saveAndRenderTasks() {
+      localStorage.setItem('kharix_tasks', JSON.stringify(tasks));
+      renderAll();
+    }
+
+    function getDeadlineStatus(dueDateStr, completed) {
+      if (!dueDateStr || completed) return { label: '', class: 'status-normal', itemClass: '', isOverdue: false };
+      const today = new Date(); today.setHours(0,0,0,0);
+      const due = new Date(dueDateStr); due.setHours(0,0,0,0);
+      const diffDays = Math.ceil((due - today) / (1000 * 60 * 60 * 24));
+
+      if (diffDays < 0) return { label: 'OVERDUE', class: 'status-overdue', itemClass: 'is-overdue', isOverdue: true };
+      if (diffDays === 0) return { label: 'DUE TODAY', class: 'status-today', itemClass: 'is-due-today', isOverdue: false };
+      if (diffDays <= 2) return { label: `Due in ${diffDays}d`, class: 'status-soon', itemClass: '', isOverdue: false };
+      return { label: '', class: '', itemClass: '', isOverdue: false };
+    }
+
+    let currentFilter = 'all';
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+        e.target.classList.add('active');
+        currentFilter = e.target.dataset.filter;
+        renderTasks();
+      });
+    });
+
+    function renderTasks() {
+      const list = document.getElementById('task-list');
+      if (!list) return;
+      list.innerHTML = '';
+
+      let filtered = tasks.filter(t => {
+        if (currentFilter === 'active') return !t.completed;
+        if (currentFilter === 'completed') return t.completed;
+        if (currentFilter === 'overdue') return getDeadlineStatus(t.dueDate, t.completed).isOverdue;
+        return true;
+      });
+
+      const searchQuery = document.getElementById('search-input')?.value.toLowerCase() || '';
+      if (searchQuery) {
+        filtered = filtered.filter(t => t.text.toLowerCase().includes(searchQuery) || t.subject.toLowerCase().includes(searchQuery));
+      }
+
+      const sortBy = document.getElementById('sort-select')?.value || 'date-desc';
+      filtered.sort((a, b) => {
+        if (sortBy === 'date-asc') return a.id - b.id;
+        if (sortBy === 'date-desc') return b.id - a.id;
+        if (sortBy === 'alpha') return a.text.localeCompare(b.text);
+        if (sortBy === 'due-date') {
+          if (!a.dueDate) return 1;
+          if (!b.dueDate) return -1;
+          return new Date(a.dueDate) - new Date(b.dueDate);
+        }
+        if (sortBy === 'priority') {
+          const rank = { Urgent: 1, High: 2, Medium: 3, Low: 4 };
+          return (rank[a.priority] || 3) - (rank[b.priority] || 3);
+        }
+        return 0;
+      });
+
+      if (filtered.length === 0) {
+        list.innerHTML = `<div class="empty-state"><i class="fas fa-clipboard-check"></i><p>No tasks found.</p></div>`;
+        return;
+      }
+
+      filtered.forEach(t => {
+        const status = getDeadlineStatus(t.dueDate, t.completed);
+        const li = document.createElement('li');
+        li.className = `task-item ${t.completed ? 'completed' : ''} ${status.itemClass}`;
+        
+        let priorityClass = 'badge-priority-medium';
+        if (t.priority === 'Urgent') priorityClass = 'badge-priority-urgent';
+        else if (t.priority === 'High') priorityClass = 'badge-priority-high';
+        else if (t.priority === 'Low') priorityClass = 'badge-priority-low';
+
+        li.innerHTML = `
+          <input type="checkbox" class="custom-checkbox" ${t.completed ? 'checked' : ''} onchange="toggleTask(${t.id})">
+          <div class="task-content" onclick="openTaskModal(${t.id})">
+            <span class="task-text">${t.text}</span>
+            <div class="task-meta">
+              <span class="badge badge-subject">${t.subject}</span>
+              <span class="badge ${priorityClass}">${t.priority || 'Medium'}</span>
+              ${t.dueDate ? `<span><i class="far fa-calendar"></i> ${t.dueDate}</span>` : ''}
+              ${status.label ? `<span class="deadline-badge ${status.class}"><i class="fas fa-clock"></i> ${status.label}</span>` : ''}
+              ${t.recurring && t.recurring !== 'none' ? `<span><i class="fas fa-redo"></i> ${t.recurring}</span>` : ''}
+            </div>
+          </div>
+          <button class="btn-icon" onclick="moveToTrash(${t.id})"><i class="fas fa-trash"></i></button>
+        `;
+        list.appendChild(li);
+      });
+    }
+
+    function renderDashboard() {
+      const list = document.getElementById('dashboard-task-list');
+      if (!list) return;
+      list.innerHTML = '';
+      
+      const todayTasks = tasks.filter(t => !t.completed).slice(0, 5);
+      if (todayTasks.length === 0) {
+        list.innerHTML = `<div class="empty-state"><p>All tasks completed for today!</p></div>`;
+        return;
+      }
+
+      todayTasks.forEach(t => {
+        const status = getDeadlineStatus(t.dueDate, t.completed);
+        const li = document.createElement('li');
+        li.className = `task-item ${status.itemClass}`;
+        li.innerHTML = `
+          <input type="checkbox" class="custom-checkbox" onchange="toggleTask(${t.id})">
+          <div class="task-content" onclick="openTaskModal(${t.id})">
+            <span class="task-text">${t.text}</span>
+            <div class="task-meta">
+              <span class="badge badge-subject">${t.subject}</span>
+              ${status.label ? `<span class="deadline-badge ${status.class}">${status.label}</span>` : ''}
+            </div>
+          </div>
+        `;
+        list.appendChild(li);
+      });
+    }
+
+    function renderTrash() {
+      const list = document.getElementById('trash-list');
+      if (!list) return;
+      list.innerHTML = '';
+      if (trash.length === 0) {
+        list.innerHTML = `<div class="empty-state"><i class="fas fa-trash"></i><p>Trash is empty.</p></div>`;
+        return;
+      }
+      trash.forEach(t => {
+        const li = document.createElement('li');
+        li.className = 'task-item';
+        li.innerHTML = `
+          <div class="task-content">
+            <span class="task-text">${t.text}</span>
+            <div class="task-meta"><span class="badge badge-subject">${t.subject}</span></div>
+          </div>
+          <div style="display: flex; gap: 8px;">
+            <button class="btn-icon" onclick="restoreFromTrash(${t.id})" title="Restore"><i class="fas fa-undo"></i></button>
+            <button class="btn-icon" onclick="deletePermanently(${t.id})" title="Delete Forever"><i class="fas fa-times"></i></button>
+          </div>
+        `;
+        list.appendChild(li);
+      });
+    }
+
+    function renderCalendar() {
+      const container = document.getElementById('calendar-days-container');
+      const label = document.getElementById('cal-month-year');
+      if (!container) return;
+      container.innerHTML = '';
+
+      const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+      label.innerText = `${monthNames[calMonth]} ${calYear}`;
+
+      const firstDay = new Date(calYear, calMonth, 1).getDay();
+      const daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
+      const todayStr = new Date().toISOString().split('T')[0];
+
+      for (let i = 0; i < firstDay; i++) {
+        const cell = document.createElement('div');
+        cell.className = 'cal-cell other-month';
+        container.appendChild(cell);
+      }
+
+      for (let d = 1; d <= daysInMonth; d++) {
+        const cell = document.createElement('div');
+        const monthPad = String(calMonth + 1).padStart(2, '0');
+        const dayPad = String(d).padStart(2, '0');
+        const dateStr = `${calYear}-${monthPad}-${dayPad}`;
+
+        cell.className = `cal-cell ${dateStr === todayStr ? 'today' : ''}`;
+        
+        let dateHtml = `<span class="cal-date-num">${d}</span>`;
+        const dayTasks = tasks.filter(t => t.dueDate === dateStr);
+        dayTasks.forEach(dt => {
+          dateHtml += `<div class="cal-task-pill" title="${dt.text}">${dt.text}</div>`;
+        });
+
+        cell.innerHTML = dateHtml;
+        container.appendChild(cell);
+      }
+    }
+
+    function changeMonth(dir) {
+      calMonth += dir;
+      if (calMonth > 11) { calMonth = 0; calYear++; }
+      else if (calMonth < 0) { calMonth = 11; calYear--; }
+      renderCalendar();
+    }
+
+    function updateStats() {
+      const total = tasks.length;
+      const completed = tasks.filter(t => t.completed).length;
+      const active = total - completed;
+      const overdue = tasks.filter(t => getDeadlineStatus(t.dueDate, t.completed).isOverdue).length;
+
+      document.getElementById('stat-total').innerText = total;
+      document.getElementById('stat-active').innerText = active;
+      document.getElementById('stat-completed').innerText = completed;
+      document.getElementById('stat-overdue').innerText = overdue;
+      document.getElementById('stat-completed-count').innerText = completed;
+
+      const rate = total === 0 ? 0 : Math.round((completed / total) * 100);
+      document.getElementById('stat-completion-rate').innerText = `${rate}%`;
+
+      const goalTarget = total;
+      const goalCompleted = completed;
+      document.getElementById('goal-count').innerText = `${goalCompleted} / ${goalTarget} tasks completed`;
+      
+      const goalPct = total === 0 ? 0 : Math.min(100, Math.round((completed / total) * 100));
+      document.getElementById('goal-percent').innerText = `${goalPct}%`;
+      document.getElementById('goal-progress-bar').style.width = `${goalPct}%`;
+
+      const pContainer = document.getElementById('priority-analytics-container');
+      if (pContainer) {
+        pContainer.innerHTML = '';
+        ['Urgent', 'High', 'Medium', 'Low'].forEach(p => {
+          const count = tasks.filter(t => (t.priority || 'Medium') === p).length;
+          pContainer.innerHTML += `<div><span style="font-size:0.85rem; font-weight:700;">${p}: ${count} tasks</span></div>`;
+        });
+      }
+
+      const cContainer = document.getElementById('category-analytics-container');
+      if (cContainer) {
+        cContainer.innerHTML = '';
+        subjects.forEach(sub => {
+          const count = tasks.filter(t => t.subject === sub).length;
+          cContainer.innerHTML += `<div><span style="font-size:0.85rem; font-weight:700;"><i class="fas fa-folder"></i> ${sub}: ${count} tasks</span></div>`;
+        });
+      }
+    }
+
+    function saveNotes() {
+      quickNotesText = document.getElementById('quick-notes').value;
+      localStorage.setItem('kharix_notes', quickNotesText);
+    }
+
+    /* --- SCRATCHPAD & NOTE FOLDERS MANAGEMENT LOGIC --- */
+    function openFolderModal() {
+      document.getElementById('folder-modal').style.display = 'flex';
+    }
+
+    function closeFolderModal() {
+      document.getElementById('folder-modal').style.display = 'none';
+    }
+
+    function handleFolderFormSubmit(e) {
+      e.preventDefault();
+      const folderName = document.getElementById('new-folder-name').value.trim();
+      if (folderName && !noteFolders.includes(folderName)) {
+        noteFolders.push(folderName);
+        localStorage.setItem('kharix_note_folders', JSON.stringify(noteFolders));
+        document.getElementById('new-folder-name').value = '';
+        closeFolderModal();
+        renderNoteFoldersAndFiles();
+      } else {
+        alert('Folder already exists or is invalid.');
+      }
+    }
+
+    function openNoteModal() {
+      const select = document.getElementById('new-note-folder-select');
+      select.innerHTML = '';
+      noteFolders.forEach(folder => {
+        const opt = document.createElement('option');
+        opt.value = folder;
+        opt.innerText = folder;
+        select.appendChild(opt);
+      });
+      document.getElementById('note-modal').style.display = 'flex';
+    }
+
+    function closeNoteModal() {
+      document.getElementById('note-modal').style.display = 'none';
+    }
+
+    function handleNoteFileFormSubmit(e) {
+      e.preventDefault();
+      const title = document.getElementById('new-note-title').value.trim();
+      const folder = document.getElementById('new-note-folder-select').value;
+
+      if (title) {
+        const newNote = {
+          id: Date.now(),
+          title: title,
+          folder: folder,
+          content: `# ${title}\nStart writing your note content here...`
+        };
+        noteFiles.push(newNote);
+        activeNoteId = newNote.id;
+        saveAndRenderNoteFiles();
+        document.getElementById('new-note-title').value = '';
+        closeNoteModal();
+      }
+    }
+
+    function selectFolderFilter(folderName) {
+      activeFolderFilter = folderName;
+      renderNoteFoldersAndFiles();
+    }
+
+    function selectNoteFile(id) {
+      activeNoteId = id;
+      renderNoteFoldersAndFiles();
+    }
+
+    function saveCurrentNoteContent() {
+      if (!activeNoteId) return;
+      const textareaVal = document.getElementById('scratchpad-textarea').value;
+      noteFiles = noteFiles.map(f => f.id === activeNoteId ? { ...f, content: textareaVal } : f);
+      localStorage.setItem('kharix_note_files', JSON.stringify(noteFiles));
+      if (isScratchpadPreviewActive) {
+        updateScratchpadPreview();
+      }
+    }
+
+    function renameCurrentNote() {
+      const note = noteFiles.find(f => f.id === activeNoteId);
+      if (!note) return;
+      const newTitle = prompt("Enter new file title:", note.title);
+      if (newTitle && newTitle.trim() !== '') {
+        noteFiles = noteFiles.map(f => f.id === activeNoteId ? { ...f, title: newTitle.trim() } : f);
+        saveAndRenderNoteFiles();
+      }
+    }
+
+    function deleteCurrentNote() {
+      if (confirm("Are you sure you want to delete this note file?")) {
+        noteFiles = noteFiles.filter(f => f.id !== activeNoteId);
+        activeNoteId = noteFiles.length > 0 ? noteFiles[0].id : null;
+        saveAndRenderNoteFiles();
+      }
+    }
+
+    window.deleteNoteFolder = function(folderName) {
+      if (confirm(`Delete folder "${folderName}" and all note files inside it?`)) {
+        noteFolders = noteFolders.filter(f => f !== folderName);
+        noteFiles = noteFiles.filter(f => f.folder !== folderName);
+        localStorage.setItem('kharix_note_folders', JSON.stringify(noteFolders));
+        if (activeFolderFilter === folderName) activeFolderFilter = 'All';
+        activeNoteId = noteFiles.length > 0 ? noteFiles[0].id : null;
+        saveAndRenderNoteFiles();
+      }
+    };
+
+    function saveAndRenderNoteFiles() {
+      localStorage.setItem('kharix_note_files', JSON.stringify(noteFiles));
+      renderNoteFoldersAndFiles();
+    }
+
+    function renderNoteFoldersAndFiles() {
+      const foldersContainer = document.getElementById('note-folders-list');
+      if (!foldersContainer) return;
+      foldersContainer.innerHTML = '';
+
+      // "All Folders" option
+      const allRow = document.createElement('div');
+      allRow.className = `folder-item-row ${activeFolderFilter === 'All' ? 'active' : ''}`;
+      allRow.innerHTML = `<span><i class="fas fa-folder-open" style="margin-right: 8px;"></i> All Notes</span><span>${noteFiles.length}</span>`;
+      allRow.onclick = () => selectFolderFilter('All');
+      foldersContainer.appendChild(allRow);
+
+      noteFolders.forEach(folder => {
+        const count = noteFiles.filter(f => f.folder === folder).length;
+        const rowWrap = document.createElement('div');
+        rowWrap.style.display = 'flex';
+        rowWrap.style.flexDirection = 'column';
+        rowWrap.style.gap = '4px';
+
+        const folderRow = document.createElement('div');
+        folderRow.className = `folder-item-row ${activeFolderFilter === folder ? 'active' : ''}`;
+        folderRow.innerHTML = `
+          <span style="display: flex; align-items: center; gap: 8px;" onclick="selectFolderFilter('${folder}')"><i class="fas fa-folder"></i> ${folder}</span>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span style="font-size: 0.75rem;">${count}</span>
+            <i class="fas fa-trash" style="font-size: 0.75rem; cursor: pointer; color: var(--text-muted);" onclick="deleteNoteFolder('${folder}')" title="Delete Folder"></i>
+          </div>
+        `;
+        rowWrap.appendChild(folderRow);
+
+        // Render files inside folder if folder is currently selected or 'All'
+        const matchedFiles = noteFiles.filter(f => f.folder === folder);
+        if ((activeFolderFilter === folder || activeFolderFilter === 'All') && matchedFiles.length > 0) {
+          const filesSubContainer = document.createElement('div');
+          filesSubContainer.style.display = 'flex';
+          filesSubContainer.style.flexDirection = 'column';
+          filesSubContainer.style.gap = '4px';
+          filesSubContainer.style.paddingLeft = '14px';
+          filesSubContainer.style.marginTop = '4px';
+
+          matchedFiles.forEach(file => {
+            const fileItem = document.createElement('div');
+            fileItem.className = `note-file-item ${file.id === activeNoteId ? 'active' : ''}`;
+            fileItem.innerHTML = `<span style="font-size: 0.85rem; font-weight: 600; color: var(--text-main);"><i class="fas fa-file-alt" style="margin-right: 6px; color: var(--accent-solid);"></i> ${file.title}</span>`;
+            fileItem.onclick = (e) => {
+              e.stopPropagation();
+              selectNoteFile(file.id);
+            };
+            filesSubContainer.appendChild(fileItem);
+          });
+          rowWrap.appendChild(filesSubContainer);
+        }
+
+        foldersContainer.appendChild(rowWrap);
+      });
+
+      // Update active note editor state
+      const textarea = document.getElementById('scratchpad-textarea');
+      const titleHeading = document.getElementById('current-active-note-title');
+      const actionButtons = document.getElementById('note-action-buttons');
+      const activeNote = noteFiles.find(f => f.id === activeNoteId);
+
+      if (activeNote) {
+        titleHeading.innerText = activeNote.title;
+        textarea.value = activeNote.content;
+        textarea.disabled = false;
+        actionButtons.style.display = 'flex';
+        if (isScratchpadPreviewActive) {
+          updateScratchpadPreview();
+        }
+      } else {
+        titleHeading.innerText = 'No note selected';
+        textarea.value = '';
+        textarea.disabled = true;
+        actionButtons.style.display = 'none';
+        document.getElementById('scratchpad-preview').innerHTML = '<em style="color: var(--text-muted);">No file selected...</em>';
+      }
+    }
+
+    function insertMarkdown(prefix, suffix = '') {
+      const textarea = document.getElementById('scratchpad-textarea');
+      const start = textarea.selectionStart;
+      const end = textarea.selectionEnd;
+      const val = textarea.value;
+      
+      textarea.value = val.substring(0, start) + prefix + val.substring(start, end) + suffix + val.substring(end);
+      textarea.focus();
+      textarea.setSelectionRange(start + prefix.length, end + prefix.length);
+      saveCurrentNoteContent();
+    }
+
+    function toggleScratchpadPreview() {
+      const textarea = document.getElementById('scratchpad-textarea');
+      const preview = document.getElementById('scratchpad-preview');
+      const toggleBtn = document.getElementById('scratchpad-preview-toggle');
+
+      isScratchpadPreviewActive = !isScratchpadPreviewActive;
+      if (isScratchpadPreviewActive) {
+        updateScratchpadPreview();
+        textarea.style.display = 'none';
+        preview.style.display = 'block';
+        toggleBtn.innerHTML = '<i class="fas fa-edit"></i> Edit Note';
+      } else {
+        preview.style.display = 'none';
+        textarea.style.display = 'block';
+        toggleBtn.innerHTML = '<i class="fas fa-eye"></i> Preview Markdown';
+      }
+    }
+
+    function updateScratchpadPreview() {
+      const text = document.getElementById('scratchpad-textarea').value;
+      const preview = document.getElementById('scratchpad-preview');
+      
+      let html = text
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/^# (.*$)/gm, '<h1>$1</h1>')
+        .replace(/^## (.*$)/gm, '<h2>$1</h2>')
+        .replace(/^### (.*$)/gm, '<h3>$1</h3>')
+        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\*(.*?)\*/g, '<em>$1</em>')
+        .replace(/^- (.*$)/gm, '<li>$1</li>')
+        .replace(/\n/g, '<br>');
+
+      html = html.replace(/(<li>.*<\/li>)+/g, '<ul>$&</ul>');
+      preview.innerHTML = html || '<em style="color: var(--text-muted);">Nothing to preview yet...</em>';
+    }
+
+    function exportData() {
+      const backup = { tasks, trash, subjects, userProfile, quickNotesText, noteFolders, noteFiles };
+      const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `kharix_backup_${new Date().toISOString().split('T')[0]}.json`;
+      a.click();
+    }
+
+    function importData(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        try {
+          const data = JSON.parse(evt.target.result);
+          if (data.tasks) tasks = data.tasks;
+          if (data.trash) trash = data.trash;
+          if (data.subjects) subjects = data.subjects;
+          if (data.userProfile) userProfile = data.userProfile;
+          if (data.noteFolders) noteFolders = data.noteFolders;
+          if (data.noteFiles) {
+            noteFiles = data.noteFiles;
+            activeNoteId = noteFiles.length > 0 ? noteFiles[0].id : null;
+          }
+          localStorage.setItem('kharix_tasks', JSON.stringify(tasks));
+          localStorage.setItem('kharix_trash', JSON.stringify(trash));
+          localStorage.setItem('kharix_subjects', JSON.stringify(subjects));
+          localStorage.setItem('kharix_profile', JSON.stringify(userProfile));
+          localStorage.setItem('kharix_note_folders', JSON.stringify(noteFolders));
+          localStorage.setItem('kharix_note_files', JSON.stringify(noteFiles));
+          renderAll();
+          alert('Data restored successfully!');
+        } catch (err) {
+          alert('Invalid backup file.');
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    let timerInterval = null;
+    let timeLeft = 25 * 60;
+    let isRunning = false;
+
+    function changeTimerTechnique(val) {
+      pauseTimer();
+      let mins = 25;
+      if (val === 'pomodoro') mins = 25;
+      else if (val === 'deepwork') mins = 50;
+      else if (val === 'rule52') mins = 52;
+      else if (val === 'ultradian') mins = 90;
+      else if (val === 'burst') mins = 15;
+      else if (val === 'custom') {
+        mins = parseInt(document.getElementById('timer-custom-minutes').value) || 25;
+      }
+      
+      if (val !== 'custom') {
+        document.getElementById('timer-custom-minutes').value = mins;
+      }
+      
+      timeLeft = mins * 60;
+      updateTimerDisplay();
+    }
+
+    function updateCustomTimerMinutes(val) {
+      pauseTimer();
+      let mins = parseInt(val);
+      if (isNaN(mins) || mins < 1) mins = 1;
+      document.getElementById('timer-technique-select').value = 'custom';
+      timeLeft = mins * 60;
+      updateTimerDisplay();
+    }
+
+    function startTimer() {
+      if (isRunning) return;
+      isRunning = true;
+      timerInterval = setInterval(() => {
+        if (timeLeft > 0) {
+          timeLeft--;
+          updateTimerDisplay();
+        } else {
+          clearInterval(timerInterval);
+          isRunning = false;
+          alert('Focus session completed! Take a well-deserved break.');
+        }
+      }, 1000);
+    }
+
+    function pauseTimer() {
+      clearInterval(timerInterval);
+      isRunning = false;
+    }
+
+    function resetTimer() {
+      pauseTimer();
+      const currentMins = parseInt(document.getElementById('timer-custom-minutes').value) || 25;
+      timeLeft = currentMins * 60;
+      updateTimerDisplay();
+    }
+
+    function updateTimerDisplay() {
+      const mins = Math.floor(timeLeft / 60);
+      const secs = timeLeft % 60;
+      document.getElementById('timer-clock').innerText = `${String(mins).padStart(2,'0')}:${String(secs).padStart(2,'0')}`;
+    }
+
+    function renderAll() {
+      updateProfileUI();
+      renderSubjects();
+      updateSubjectDropdowns();
+      renderTasks();
+      renderDashboard();
+      renderTrash();
+      renderCalendar();
+      updateStats();
+      renderNoteFoldersAndFiles();
+    }
+
+    renderAll();
+  </script>
+</body>
+</html>
